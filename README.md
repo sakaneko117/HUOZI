@@ -14,3 +14,6 @@ python版本：3.8.x
 
 
 3.sh play.sh或者python app.py运行服务 ,然后访问http://IP:8989(默认端口8989，可在app.py中更改)
+
+
+示例：http://ottohzys.club
