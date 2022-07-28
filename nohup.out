@@ -1,0 +1,10 @@
+ * Running on all addresses (0.0.0.0)
+   WARNING: This is a development server. Do not use it in a production deployment.
+ * Running on http://127.0.0.1:8989
+ * Running on http://172.31.38.69:8989 (Press CTRL+C to quit)
+46.249.98.36 - - [27/May/2022 17:12:06] "GET / HTTP/1.1" 200 -
+46.249.98.36 - - [27/May/2022 17:12:09] "POST /make HTTP/1.1" 200 -
+46.249.98.36 - - [27/May/2022 17:12:09] "GET /1653671529.wav HTTP/1.1" 200 -
+46.249.98.36 - - [27/May/2022 17:12:10] "GET /favicon.ico HTTP/1.1" 404 -
+46.249.98.36 - - [27/May/2022 17:12:11] "POST /make HTTP/1.1" 200 -
+46.249.98.36 - - [27/May/2022 17:12:12] "GET /1653671531.wav HTTP/1.1" 200 -

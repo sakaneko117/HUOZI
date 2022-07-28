@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卧槽  炫狗</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">  
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    <style type="text/css">
+         body {
+	        background: url(./static/otto.jpg) ;
+		background-size:cover; background-size:100% 200%;
+
+
+            }
+    </style>  
+         
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">活字印刷术在线版</h1>
+	<img src="./static/lizi.jpg" alt="栗子头" width="100px" height="100px">
+        <button class="btn btn-success" onclick="make_audio();">生成OTTO鬼叫</button>
+        <label for="text"></label><textarea maxlength="100" id="text" class="form-control" style="height: 150px;"></textarea>
+        <hr>
+        <div class="preview">
+            <h3>预览</h3>
+            <audio controls autoplay id="audio" >
+                <source type='audio/wav' src="" />
+            </audio>
+            <!-- 下载 链接指向audio_url -->
+            <p><a class="btn btn-primary" onclick="window.location.href = audio_url; return false;">下载</a></p>
+        </div>
+    </div>
+    <script>
+        audio_url = "";
+        // 请求音频id
+        make_audio = function(){
+            $(".preview").hide();
+            $.ajax({
+                type: 'POST',
+                url: '/make',
+                data: {
+                    text: $("#text").val(),
+                },
+                async: false,
+                success: function(data){
+                	// 生成url
+                    // audio_play = data.id + ".wav";
+                    audio_url = "/" + data.id + ".wav";
+                    // 生成音频标签
+                    $("#audio").html(
+                        "<source type='audio/wav' src='" + audio_url + "' />"
+                    );
+                    // 重新加载标签
+                    // document.getElementById("audio").src = audio_play;
+                    document.getElementById("audio").load();
+                },
+                error: function(){
+                    alert("生成失败！");
+                }
+            });
+            $(".preview").show();
+        };
+    </script>
+</body>
+</html>
