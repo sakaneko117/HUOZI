@@ -1,7 +1,18 @@
 from flask import Flask, request, session, redirect, url_for, render_template, make_response, jsonify, flash
 from huoZiYinShua import *
+import json
+import time
+from random import randint
 
 app = Flask(__name__)
+
+
+def makeid():
+    id = str(int(time.time()))
+    id += str(randint(0, 99))
+    return id
+
+
 
 
 @app.route('/')
@@ -11,18 +22,21 @@ def index():
 
 @app.route('/make', methods=['POST'])
 def HZYSS():
-    HZYS = huoZiYinShua("/home/ubuntu/HUOZI/sources/", "/home/ubuntu/HUOZI/dictionary.csv")
+    configFile = open("./settings.json", encoding="utf8")
+    configurations = json.load(configFile)
+    configFile.close()
+    HZYS = huoZiYinShua(configurations)
     rawData = request.form.get("text")
-   # print(rawData)
-    #filepath = HZYS.export(rawData)
-    try: id = HZYS.export(rawData)
+    try:
+        id = makeid()
+        HZYS.export(rawData, "./{}.wav".format(id))
     except:return jsonify({"code": 400}), 400
     return jsonify({"text": rawData, "id": id }), 200
 
 
 @app.route('/<id>.wav')
 def get_audio(id):
-    with open('/home/ubuntu/HUOZI/{}.wav'.format(id), 'rb') as f:
+    with open('./{}.wav'.format(id), 'rb') as f:
         audio = f.read()
     response = make_response(audio)
     response.content_type = "audio/wav"
