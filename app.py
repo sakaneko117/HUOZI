@@ -61,10 +61,12 @@ def index():
 def HZYSS():
 	locker.acquire()	#锁住
 	rawData = request.form.get("text")
+	inYsddMode = request.form.get("inYsddMode")
+	inYsddMode = (inYsddMode == "true")
 	try:
 		#获取ID并导出音频
 		id = makeid()
-		HZYS.export(rawData, "{}.wav".format(tempOutputPath + id))
+		HZYS.export(rawData, filePath="{}.wav".format(tempOutputPath + id), inYsddMode=inYsddMode)
 	except:return jsonify({"code": 400}), 400
 	locker.release()	#释放
 	return jsonify({"text": rawData, "id": id }), 200
