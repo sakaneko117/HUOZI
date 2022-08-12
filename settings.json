@@ -1,0 +1,8 @@
+{
+	"sourceDirectory":".\\sources\\",
+	"ysddSourceDirectory":".\\ysddSources\\",
+	"dictFile":".\\dictionary.csv",
+	"ysddTableFile":".\\ysddTable.csv",
+	"inputFile":".\\textToRead.txt",
+	"outputFile":".\\Output.wav"
+}
