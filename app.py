@@ -2,11 +2,15 @@ from flask import Flask, request, session, redirect, url_for, render_template, m
 from huoZiYinShua import *
 import time
 from os import path, remove, listdir
-from threading import Thread
+from threading import Thread, Lock
 
 
 #临时文件存放目录
 tempOutputPath = "./tempAudioOutput/"
+#进程锁
+locker = Lock()
+#活字印刷实例
+HZYS = huoZiYinShua("./settings.json")
 
 
 #生成ID
@@ -55,12 +59,14 @@ def index():
 
 @app.route('/make', methods=['POST'])
 def HZYSS():
-	HZYS = huoZiYinShua("./settings.json")		#初始化
+	locker.acquire()	#锁住
 	rawData = request.form.get("text")
 	try:
+		#获取ID并导出音频
 		id = makeid()
 		HZYS.export(rawData, "{}.wav".format(tempOutputPath + id))
 	except:return jsonify({"code": 400}), 400
+	locker.release()	#释放
 	return jsonify({"text": rawData, "id": id }), 200
 
 
