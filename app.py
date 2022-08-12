@@ -20,7 +20,7 @@ def makeid():
 	#从0开始遍历
 	while True:
 		#若已被占用，位次+1
-		if path.exists("{}.wav".format(tempOutputPath + id + "_" + str(queuePlace))):
+		if path.exists(tempOutputPath + id + "_" + str(queuePlace) + ".wav"):
 			queuePlace += 1
 		#若未被占用，获取位次
 		else:
@@ -37,14 +37,13 @@ def clearCache():
 		for fileName in listdir(tempOutputPath):
 			try:		#文件名符合格式
 				timeCreated = int(fileName.split("_")[0])		#创建时间
-				if (currentTime - timeCreated) > 3600:			#间隔时间(秒)
+				if (currentTime - timeCreated) > 1800:			#间隔时间(秒)
 					if(fileName.endswith(".wav")):
 						remove(tempOutputPath + fileName)
 			except:
 				pass
 		
-		time.sleep(120)
-
+		time.sleep(60)
 
 
 
@@ -66,17 +65,23 @@ def HZYSS():
 	try:
 		#获取ID并导出音频
 		id = makeid()
-		HZYS.export(rawData, filePath="{}.wav".format(tempOutputPath + id), inYsddMode=inYsddMode)
-	except:return jsonify({"code": 400}), 400
-	locker.release()	#释放
-	return jsonify({"text": rawData, "id": id }), 200
+		HZYS.export(rawData, filePath=tempOutputPath+id+".wav", inYsddMode=inYsddMode)
+		#释放并返回ID
+		locker.release()
+		return jsonify({"text": rawData, "id": id }), 200
+	except:
+		#释放并返回错误代码
+		locker.release()
+		return jsonify({"code": 400}), 400
+	
 
 
 @app.route('/<id>.wav')
 def get_audio(id):
-	with open("{}.wav".format(tempOutputPath + id), 'rb') as f:
+	with open(tempOutputPath+id+".wav", 'rb') as f:
 		audio = f.read()
 	response = make_response(audio)
+	f.close()
 	response.content_type = "audio/wav"
 	return response
 

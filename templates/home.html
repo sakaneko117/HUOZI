@@ -87,15 +87,13 @@
                 },
                 async: false,
                 success: function (data) {
-                    // 生成url
-                    // audio_play = data.id + ".wav";
+                    //生成url
                     audio_url = "/" + data.id + ".wav";
-                    // 生成音频标签
+                    //生成音频标签
                     $("#audio").html(
                         "<source type='audio/wav' src='" + audio_url + "' />"
                     );
-                    // 重新加载标签
-                    // document.getElementById("audio").src = audio_play;
+                    //重新加载标签
                     document.getElementById("audio").load();
                 },
                 error: function () {
