@@ -1,4 +1,4 @@
-./tempAudioOutput/*
-./__pychache__
-./.idea
-./.git
+tempAudioOutput/**
+__pychache__/
+.idea/
+.git/
