@@ -2,11 +2,15 @@ from flask import Flask, request, session, redirect, url_for, render_template, m
 from huoZiYinShua import *
 import time
 from os import path, remove, listdir
-from threading import Thread
+from threading import Thread, Lock
 
 
 #临时文件存放目录
 tempOutputPath = "./tempAudioOutput/"
+#进程锁
+locker = Lock()
+#活字印刷实例
+HZYS = huoZiYinShua("./settings.json")
 
 
 #生成ID
@@ -16,7 +20,7 @@ def makeid():
 	#从0开始遍历
 	while True:
 		#若已被占用，位次+1
-		if path.exists("{}.wav".format(tempOutputPath + id + "_" + str(queuePlace))):
+		if path.exists(tempOutputPath + id + "_" + str(queuePlace) + ".wav"):
 			queuePlace += 1
 		#若未被占用，获取位次
 		else:
@@ -33,14 +37,13 @@ def clearCache():
 		for fileName in listdir(tempOutputPath):
 			try:		#文件名符合格式
 				timeCreated = int(fileName.split("_")[0])		#创建时间
-				if (currentTime - timeCreated) > 3600:			#间隔时间(秒)
+				if (currentTime - timeCreated) > 1800:			#间隔时间(秒)
 					if(fileName.endswith(".wav")):
 						remove(tempOutputPath + fileName)
 			except:
 				pass
 		
-		time.sleep(120)
-
+		time.sleep(60)
 
 
 
@@ -55,20 +58,30 @@ def index():
 
 @app.route('/make', methods=['POST'])
 def HZYSS():
-	HZYS = huoZiYinShua("./settings.json")		#初始化
+	locker.acquire()	#锁住
 	rawData = request.form.get("text")
+	inYsddMode = request.form.get("inYsddMode")
+	inYsddMode = (inYsddMode == "true")
 	try:
+		#获取ID并导出音频
 		id = makeid()
-		HZYS.export(rawData, "{}.wav".format(tempOutputPath + id))
-	except:return jsonify({"code": 400}), 400
-	return jsonify({"text": rawData, "id": id }), 200
+		HZYS.export(rawData, filePath=tempOutputPath+id+".wav", inYsddMode=inYsddMode)
+		#释放并返回ID
+		locker.release()
+		return jsonify({"text": rawData, "id": id }), 200
+	except:
+		#释放并返回错误代码
+		locker.release()
+		return jsonify({"code": 400}), 400
+	
 
 
 @app.route('/<id>.wav')
 def get_audio(id):
-	with open("{}.wav".format(tempOutputPath + id), 'rb') as f:
+	with open(tempOutputPath+id+".wav", 'rb') as f:
 		audio = f.read()
 	response = make_response(audio)
+	f.close()
 	response.content_type = "audio/wav"
 	return response
 

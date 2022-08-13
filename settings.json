@@ -1,6 +1,6 @@
 {
 	"sourceDirectory":".\\sources\\",
-	"ysddSourceDirectory":".\\ysddSources\\",
+	"ysddSourceDirectory":".\\static\\",
 	"dictFile":".\\dictionary.csv",
 	"ysddTableFile":".\\ysddTable.csv",
 	"inputFile":".\\textToRead.txt",

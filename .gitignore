@@ -1,0 +1,4 @@
+tempAudioOutput/**.wav
+__pycache__/
+.idea/
+.git/
