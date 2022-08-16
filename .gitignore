@@ -1,4 +1,5 @@
 tempAudioOutput/**.wav
+tempAudioOutput/**.hamood
 __pycache__/
 .idea/
 .git/
