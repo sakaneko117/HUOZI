@@ -1,8 +1,8 @@
 {
-	"sourceDirectory":".\\sources\\",
-	"ysddSourceDirectory":".\\static\\",
-	"dictFile":".\\dictionary.csv",
-	"ysddTableFile":".\\ysddTable.csv",
-	"inputFile":".\\textToRead.txt",
-	"outputFile":".\\Output.wav"
+	"sourceDirectory":"./sources/",
+	"ysddSourceDirectory":"./static/",
+	"dictFile":"./dictionary.json",
+	"ysddTableFile":"./ysddTable.json",
+	"inputFile":"./textToRead.txt",
+	"outputFile":"./Output.wav"
 }
