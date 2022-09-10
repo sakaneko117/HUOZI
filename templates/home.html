@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/static/lizi.ico">
     <title>卧槽 炫狗</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    <link rel="stylesheet" href="/static/bootstrap.min.css"
         integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    <script src="/static/jquery-3.6.1.js"></script>
     <style type="text/css">
         body {
-            background: url(./static/otto.jpg);
+            background: url(/static/otto.jpg);
             background-size: cover;
             background-size: 100% 200%;
         }
@@ -22,11 +23,11 @@
 <body>
     <div class="container">
         <h1 style="text-align: center;">活字印刷术在线版</h1>
-        <img src="./static/lizi.jpg" alt="栗子头" width="100px" height="100px">
+        <img src="/static/lizi.jpg" alt="栗子头" width="100px" height="100px">
         <button class="btn btn-success" onclick="make_audio();">生成OTTO鬼叫</button>
         <label for="text"></label><textarea maxlength="100" id="text" class="form-control"
             style="height: 150px;"></textarea>
-		<input type="checkbox" name="outputOptions" />匹配到特定文字时使用原声大碟
+		<input type="checkbox" name="ysdd" />匹配到特定文字时使用原声大碟
         <hr>
         <div class="preview">
             <h3>预览</h3>
@@ -34,41 +35,41 @@
                 <source type='audio/wav' src="" />
             </audio>
             <!-- 下载 链接指向audio_url -->
-            <p><a class="btn btn-primary" onclick="window.location.href = audio_url; return false;">下载</a></p>
+            <p><a class="btn btn-primary" onclick="window.open(audio_url); return false;">下载</a></p>
             <audio autoplay id="audio">
-                <source type='audio/wav' src="./static/hlmml.wav" />
+                <source type='audio/wav' src="/static/hlmml.wav" />
             </audio>
             <h3>大家好啊</h3>
             <audio controls id="djh">
-                <source type='audio/wav' src="./static/djha.wav" />
+                <source type='audio/wav' src="/static/djha.wav" />
             </audio>
             <h3>我是说的道理</h3>
             <audio controls id="wssddl">
-                <source type='audio/wav' src="./static/wssddl.wav" />
+                <source type='audio/wav' src="/static/wssddl.wav" />
             </audio>
             <h3>今天来点大家想看的东西</h3>
             <audio controls id="jt">
-                <source type='audio/wav' src="./static/jtlaidian.wav" />
+                <source type='audio/wav' src="/static/jtlaidian.wav" />
             </audio>
             <h3>说的道理</h3>
             <audio controls id="sddl">
-                <source type='audio/wav' src="./static/sddl.wav" />
+                <source type='audio/wav' src="/static/sddl.wav" />
             </audio>
             <h3>米浴</h3>
             <audio controls id="miyu">
-                <source type='audio/wav' src="./static/miyu.wav" />
+                <source type='audio/wav' src="/static/miyu.wav" />
             </audio>
             <h3>波比</h3>
             <audio controls id="bobi">
-                <source type='audio/wav' src="./static/bobi.wav" />
+                <source type='audio/wav' src="/static/bobi.wav" />
             </audio>
             <h3>浮夸</h3>
             <audio controls id="fukua">
-                <source type='audio/wav' src="./static/fukua.wav" />
+                <source type='audio/wav' src="/static/fukua.wav" />
             </audio>
             <h3>完整版</h3>
             <audio controls id="full">
-                <source type='audio/wav' src="./static/fullver.wav" />
+                <source type='audio/wav' src="/static/fullver.wav" />
             </audio>
         </div>
     </div>
@@ -76,7 +77,7 @@
         audio_url = "";
         // 请求音频id
         make_audio = function () {
-			var ysddCheckBox = document.getElementsByName("outputOptions")
+			var ysddCheckBox = document.getElementsByName("ysdd")
             $(".preview").hide();
             $.ajax({
                 type: 'POST',
@@ -87,17 +88,19 @@
                 },
                 async: false,
                 success: function (data) {
-                    //生成url
-                    audio_url = "/" + data.id + ".wav";
-                    //生成音频标签
-                    $("#audio").html(
-                        "<source type='audio/wav' src='" + audio_url + "' />"
-                    );
-                    //重新加载标签
-                    document.getElementById("audio").load();
-                },
-                error: function () {
-                    alert("生成失败！");
+                    if (data.code == 200){
+                        //生成url
+                        audio_url = "/" + data.id + ".wav";
+                        //生成音频标签
+                        $("#audio").html(
+                            "<source type='audio/wav' src='" + audio_url + "' />"
+                        );
+                        //重新加载标签
+                        document.getElementById("audio").load();
+                    }
+                    else{
+                        alert(data.message)
+                    }
                 }
             });
             $(".preview").show();

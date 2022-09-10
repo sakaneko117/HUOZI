@@ -1,8 +1,11 @@
-from flask import Flask, request, session, redirect, url_for, render_template, make_response, jsonify, flash
+from flask import Flask, request, render_template, make_response, jsonify
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from huoZiYinShua import *
 import time
 from os import path, remove, listdir
 from threading import Thread, Lock
+import logging
 
 
 
@@ -10,6 +13,17 @@ from threading import Thread, Lock
 tempOutputPath = "./tempAudioOutput/"
 #进程锁
 locker = Lock()
+
+
+
+
+#启动日志
+hzysLogger = logging.getLogger()
+hzysFileHandler = logging.FileHandler("record.log", encoding="utf8", mode="a")
+hzysFormatter = logging.Formatter("%(asctime)s, %(message)s")
+hzysFileHandler.setFormatter(hzysFormatter)
+hzysLogger.addHandler(hzysFileHandler)
+hzysLogger.setLevel(logging.DEBUG)
 
 
 
@@ -24,7 +38,7 @@ def makeid():
 			queuePlace += 1
 		#若未被占用，获取位次
 		else:
-			id = id + "_" + str(queuePlace)
+			id = id + "_" + str(queuePlace) + "_" + request.remote_addr
 			break
 	return id
 
@@ -56,10 +70,13 @@ def clearCache():
 
 
 app = Flask(__name__)
+#限制访问
+limiter = Limiter(app, key_func=get_remote_address, default_limits=["6 per minute"])
 
 
 
 @app.route('/')
+@limiter.limit("30 per minute")
 def index():
 	return render_template("home.html")
 
@@ -71,10 +88,10 @@ def HZYSS():
 	rawData = request.form.get("text")				#获取文本
 	inYsddMode = request.form.get("inYsddMode")		#是否使用原声大碟模式
 	inYsddMode = (inYsddMode == "true")
+	app.logger.debug("%s", request.form)			#记录日志
 	#如果文本过长，不予生成音频并返回错误代码
 	if len(rawData) > 100:
-		print("请求文本过长")
-		return jsonify({"code": 400}), 400
+		return jsonify({"code": 400, "message": "憋刷辣！"}), 200
 	locker.acquire()								#锁住
 	try:
 		#获取ID
@@ -89,11 +106,11 @@ def HZYSS():
 		#导出音频
 		HZYS.export(rawData, filePath=tempOutputPath+id+".wav", inYsddMode=inYsddMode)
 		#返回ID
-		return jsonify({"text": rawData, "id": id }), 200
+		return jsonify({"code": 200, "id": id}), 200
 	except:
 		#解锁并返回错误代码
 		locker.release()
-		return jsonify({"code": 400}), 400
+		return jsonify({"code": 400, "message": "生成失败"}), 200
 	
 
 

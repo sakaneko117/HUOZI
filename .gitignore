@@ -3,3 +3,4 @@ tempAudioOutput/**.hamood
 __pycache__/
 .idea/
 .git/
+record.log
