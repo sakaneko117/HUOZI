@@ -1,8 +1,7 @@
 from flask import Flask, request, render_template, make_response, jsonify
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from huoZiYinShua import *
 import time
+import secrets
 from os import path, remove, listdir
 from threading import Thread, Lock
 import logging
@@ -38,7 +37,7 @@ def makeid():
 			queuePlace += 1
 		#若未被占用，获取位次
 		else:
-			id = id + "_" + str(queuePlace) + "_" + request.remote_addr
+			id = id + "_" + str(queuePlace) + "_" + secrets.token_hex(8)
 			break
 	return id
 
@@ -70,13 +69,10 @@ def clearCache():
 
 
 app = Flask(__name__)
-#限制访问
-limiter = Limiter(app, key_func=get_remote_address, default_limits=["6 per minute"])
 
 
 
 @app.route('/')
-@limiter.limit("30 per minute")
 def index():
 	return render_template("home.html")
 
@@ -117,12 +113,15 @@ def HZYSS():
 #用户发出下载音频的请求
 @app.route('/<id>.wav')
 def get_audio(id):
-	with open(tempOutputPath+id+".wav", 'rb') as f:
-		audio = f.read()
-	response = make_response(audio)
-	f.close()
-	response.content_type = "audio/wav"
-	return response
+	try:
+		with open(tempOutputPath+id+".wav", 'rb') as f:
+			audio = f.read()
+		response = make_response(audio)
+		f.close()
+		response.content_type = "audio/wav"
+		return response
+	except:
+		return jsonify({"code": 400, "message": "返回音频文件失败，可能已被清理"}), 400
 
 
 if __name__ == '__main__':

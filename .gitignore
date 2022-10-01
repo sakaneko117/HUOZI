@@ -1,6 +1,6 @@
-tempAudioOutput/**.wav
-tempAudioOutput/**.hamood
-__pycache__/
-.idea/
-.git/
-record.log
+/tempAudioOutput/**.wav
+/tempAudioOutput/**.hamood
+/__pycache__
+/.idea
+/.git
+/record.log
