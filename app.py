@@ -116,8 +116,9 @@ def HZYSS():
 					pitchMult=pitchMult)
 		#返回ID
 		return jsonify({"code": 200, "id": id}), 200
-	except:
+	except Exception as e:
 		#返回错误代码
+		print(e)
 		return jsonify({"code": 400, "message": "生成失败"}), 400
 	
 
