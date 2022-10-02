@@ -31,9 +31,15 @@
 		<!-- 文本框 -->
 		<label for="text"></label><textarea maxlength="100" id="text" class="form-control"
 			style="height: 150px;"></textarea>
-		<!-- 原声大碟复选框 -->
-		<input type="checkbox" id="ysdd" />匹配到特定文字时使用原声大碟
-		
+		<!-- 生成选项 -->
+		<p><input type="checkbox" id="ysdd" />匹配到特定文字时使用原声大碟</p>
+		<p><input type="checkbox" id="reverse" />倒放生成的音频</p>
+		<p><input type="checkbox" id="norm" />统一音频的音量</p>
+		<p><text id="speedMultDisp">速度：1</text><input type="range" id="speedMult" min="0.5" max="2" value="1" step="0.1"
+			oninput="document.getElementById(&quot;speedMultDisp&quot;).textContent=&quot;速度：&quot;+this.value;"></p>
+		<p><text id="pitchMultDisp">音调：1</text><input type="range" id="pitchMult" min="0.5" max="2" value="1" step="0.1"
+			oninput="document.getElementById(&quot;pitchMultDisp&quot;).textContent=&quot;音调：&quot;+this.value;"></p>
+
 		<!-- 音频 -->
 		<hr>
 		<div class="preview">
@@ -94,7 +100,16 @@
 		make_audio = function () {
 			//读取生成选项
 			var ysddCheckBox = document.getElementById("ysdd");
-			var body = "text=" + $("#text").val() + "&inYsddMode=" + ysddCheckBox.checked;
+			var normCheckBox = document.getElementById("norm");
+			var reverseCheckBox = document.getElementById("reverse");
+			var speedMultRange = document.getElementById("speedMult");
+			var pitchMultRange = document.getElementById("pitchMult");
+			var body = "text=" + $("#text").val()
+						+ "&inYsddMode=" + ysddCheckBox.checked
+						+ "&norm=" + normCheckBox.checked
+						+ "&reverse=" + reverseCheckBox.checked
+						+ "&speedMult=" + speedMultRange.value
+						+ "&pitchMult=" + pitchMultRange.value;
 
 			//创建xmlhttprequest实例
 			const Http = new XMLHttpRequest();
@@ -102,17 +117,29 @@
 
 			//定义收到回应的动作
 			Http.onreadystatechange = function () {
-				if (this.readyState == 4 && this.status == 200) {
-					data = JSON.parse(this.response)
-					//生成url
-					audio_url = "/" + data.id + ".wav";
-					//生成音频标签
-					$("#audio").html(
-						"<source type='audio/wav' src='" + audio_url + "' />"
-					);
-					//重新加载标签
-					document.getElementById("audio").load();
+				if (this.readyState == 4) {
+					//正常响应
+					if(this.status == 200){
+						data = JSON.parse(this.response);
+						//生成url
+						audio_url = "/get/" + data.id + ".wav";
+						//生成音频标签
+						$("#audio").html(
+							"<source type='audio/wav' src='" + audio_url + "' />"
+						);
+						//重新加载标签
+						document.getElementById("audio").load();
+					}
+					//请求过多
+					else if (this.status == 429){
+						window.alert("憋刷辣！");
+					}
+					//其他错误
+					else{
+						window.alert(JSON.parse(this.response).message);
+					}
 				}
+
 			};
 
 			//发送请求

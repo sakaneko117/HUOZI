@@ -2,9 +2,10 @@ from flask import Flask, request, render_template, make_response, jsonify
 from huoZiYinShua import *
 import time
 import secrets
-from os import path, remove, listdir
+from os import remove, listdir
 from threading import Thread, Lock
 import logging
+import sys
 
 
 
@@ -12,6 +13,11 @@ import logging
 tempOutputPath = "./tempAudioOutput/"
 #进程锁
 locker = Lock()
+
+queueRecord = {
+	"time": 0,
+	"place": 0
+}
 
 
 
@@ -22,23 +28,23 @@ hzysFileHandler = logging.FileHandler("record.log", encoding="utf8", mode="a")
 hzysFormatter = logging.Formatter("%(asctime)s, %(message)s")
 hzysFileHandler.setFormatter(hzysFormatter)
 hzysLogger.addHandler(hzysFileHandler)
+hzysLogger.addHandler(logging.StreamHandler(sys.stdout))
 hzysLogger.setLevel(logging.DEBUG)
 
 
 
 #生成ID
 def makeid():
-	id = str(int(time.time()))		#根据时间生成前缀
-	queuePlace = 0					#同一秒内队列位次
-	#从0开始遍历
-	while True:
-		#若已被占用，位次+1
-		if path.exists(tempOutputPath + id + "_" + str(queuePlace) + ".hamood"):
-			queuePlace += 1
-		#若未被占用，获取位次
-		else:
-			id = id + "_" + str(queuePlace) + "_" + secrets.token_hex(8)
-			break
+	locker.acquire()
+	currentSec = str(int(time.time()))
+	#若进入下一秒，重置次序
+	if(queueRecord["time"] != currentSec):
+		queueRecord["time"] = currentSec
+		queueRecord["place"] = 0
+	#ID=时间+次序+随机数
+	id = currentSec + "_" + str(queueRecord["place"]) + "_" + secrets.token_hex(8)
+	queueRecord["place"] += 1
+	locker.release()
 	return id
 
 
@@ -52,8 +58,8 @@ def clearCache():
 			#文件名符合格式
 			try:
 				timeCreated = int(fileName.split("_")[0])		#创建时间
-				if (currentTime - timeCreated) > 1800:			#间隔时间(秒)
-					if fileName.endswith(".wav") or fileName.endswith(".hamood"):
+				if (currentTime - timeCreated) > 600:			#间隔时间(秒)
+					if fileName.endswith(".wav"):
 						remove(tempOutputPath + fileName)
 			#若文件名不符合格式，(currentTime - timeCreated)会报错
 			except:
@@ -81,37 +87,43 @@ def index():
 #用户发出生成音频的请求
 @app.route('/make', methods=['POST'])
 def HZYSS():
-	rawData = request.form.get("text")				#获取文本
-	inYsddMode = request.form.get("inYsddMode")		#是否使用原声大碟模式
-	inYsddMode = (inYsddMode == "true")
-	app.logger.debug("%s", request.form)			#记录日志
-	#如果文本过长，不予生成音频并返回错误代码
-	if len(rawData) > 100:
-		return jsonify({"code": 400, "message": "憋刷辣！"}), 200
-	locker.acquire()								#锁住
+	#生成选项
+	rawData = request.form.get("text")
+	inYsddMode = (request.form.get("inYsddMode") == "true")
+	norm = (request.form.get("norm") == "true")
+	reverse = (request.form.get("reverse") == "true")
+	speedMult = float(request.form.get("speedMult"))
+	pitchMult = float(request.form.get("pitchMult"))
+	#记录日志
+	app.logger.debug("%s", request.form)
+	#特殊情况不予生成音频并返回错误代码
+	if (len(rawData) > 100):
+		return jsonify({"code": 400, "message": "憋刷辣！"}), 400
+	if (speedMult < 0.5) or (speedMult > 2) or (pitchMult < 0.5) or (pitchMult > 2):
+		return jsonify({"code": 400, "message": "你在搞什么飞机？"}), 400
 	try:
 		#获取ID
 		id = makeid()
-		#新建占位文件
-		placeHolderFile = open(tempOutputPath+id+".hamood", mode="w")
-		placeHolderFile.close()
-		#解锁
-		locker.release()
 		#活字印刷实例
 		HZYS = huoZiYinShua("./settings.json")
 		#导出音频
-		HZYS.export(rawData, filePath=tempOutputPath+id+".wav", inYsddMode=inYsddMode)
+		HZYS.export(rawData,
+					filePath=tempOutputPath+id+".wav",
+					inYsddMode=inYsddMode,
+					norm=norm,
+					reverse=reverse,
+					speedMult=speedMult,
+					pitchMult=pitchMult)
 		#返回ID
 		return jsonify({"code": 200, "id": id}), 200
 	except:
-		#解锁并返回错误代码
-		locker.release()
-		return jsonify({"code": 400, "message": "生成失败"}), 200
+		#返回错误代码
+		return jsonify({"code": 400, "message": "生成失败"}), 400
 	
 
 
 #用户发出下载音频的请求
-@app.route('/<id>.wav')
+@app.route('/get/<id>.wav')
 def get_audio(id):
 	try:
 		with open(tempOutputPath+id+".wav", 'rb') as f:
@@ -121,7 +133,7 @@ def get_audio(id):
 		response.content_type = "audio/wav"
 		return response
 	except:
-		return jsonify({"code": 400, "message": "返回音频文件失败，可能已被清理"}), 400
+		return render_template("fileNotFound.html"), 404
 
 
 if __name__ == '__main__':
