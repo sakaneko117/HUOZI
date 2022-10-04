@@ -1,11 +1,11 @@
 # HUOZI
-电棍活字印刷网站
+电棍活字印刷网站@aolianfeiallin.top
 
 基于flask_web框架
 
 食用方法：
 
-python版本：3.8.x
+python版本：3.9.x
 
 1.根据requirement.txt下载依赖模块
 
