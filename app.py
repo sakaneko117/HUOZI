@@ -121,7 +121,7 @@ def HZYSS():
 	except Exception as e:
 		#返回错误代码
 		print(e)
-		return jsonify({"code": 400, "message": e}), 400
+		return jsonify({"code": 400, "message": 生成失败}), 400
 	
 
 
