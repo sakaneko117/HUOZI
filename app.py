@@ -59,7 +59,7 @@ def clearCache():
 			try:
 				timeCreated = int(fileName.split("_")[0])		#创建时间
 				if (currentTime - timeCreated) > 600:			#间隔时间(秒)
-					if fileName.endswith(".wav"):
+					if fileName.endswith(".wav") or fileName.endswith(".mp3"):
 						remove(tempOutputPath + fileName)
 			#若文件名不符合格式，(currentTime - timeCreated)会报错
 			except:
@@ -97,10 +97,12 @@ def HZYSS():
 	#记录日志
 	app.logger.debug("%s", request.form)
 	#特殊情况不予生成音频并返回错误代码
-	if (len(rawData) > 100):
-		return jsonify({"code": 400, "message": "憋刷辣！"}), 400
+	if (len(rawData) > 400):
+		return jsonify({"code": 400, "message": "带作家！憋刷辣！"}), 400
 	if (speedMult < 0.5) or (speedMult > 2) or (pitchMult < 0.5) or (pitchMult > 2):
 		return jsonify({"code": 400, "message": "你在搞什么飞机？"}), 400
+	if ((speedMult != 1) or (pitchMult != 1)) and (len(rawData) > 20):
+		return jsonify({"code": 400, "message": "调速变调功能启用时，限20字以内"}), 400
 	try:
 		#获取ID
 		id = makeid()
@@ -108,7 +110,7 @@ def HZYSS():
 		HZYS = huoZiYinShua("./settings.json")
 		#导出音频
 		HZYS.export(rawData,
-					filePath=tempOutputPath+id+".wav",
+					filePath=tempOutputPath+id+".mp3",
 					inYsddMode=inYsddMode,
 					norm=norm,
 					reverse=reverse,
@@ -119,19 +121,19 @@ def HZYSS():
 	except Exception as e:
 		#返回错误代码
 		print(e)
-		return jsonify({"code": 400, "message": "生成失败"}), 400
+		return jsonify({"code": 400, "message": e}), 400
 	
 
 
 #用户发出下载音频的请求
-@app.route('/get/<id>.wav')
+@app.route('/get/<id>.mp3')
 def get_audio(id):
 	try:
-		with open(tempOutputPath+id+".wav", 'rb') as f:
+		with open(tempOutputPath+id+".mp3", 'rb') as f:
 			audio = f.read()
 		response = make_response(audio)
 		f.close()
-		response.content_type = "audio/wav"
+		response.content_type = "audio/mpeg"
 		return response
 	except:
 		return render_template("fileNotFound.html"), 404

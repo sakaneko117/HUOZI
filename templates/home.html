@@ -7,14 +7,49 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="icon" type="image/x-icon" href="/static/lizi.ico">
 	<title>卧槽 炫狗</title>
-	<link rel="stylesheet" href="/static/bootstrap.min.css"
+	<link rel="stylesheet" href="/static/css/bootstrap.min.css"
 		integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-	<script src="/static/jquery-3.6.1.js"></script>
+	<script src="/static/js/jquery-3.6.1.js"></script>
+	<script>
+		window.onload = function(){ 
+			var bgm = document.getElementById('igs');
+			bgm.pause();//打开页面时无音乐
+			bgm = document.getElementById('aoliaolian');
+			bgm.pause();//打开页面时无音乐
+		}
+		function playbgm(strid) {
+			var bgm = document.getElementById(strid);
+			if (bgm.paused) {
+				bgm.currentTime = 0;//音乐从头播放
+				bgm.play();
+			}else{
+				bgm.pause();
+			}
+		}
+	</script>
+
 	<style type="text/css">
 		body {
-			background: url(/static/otto.jpg);
+			background: url(/static/images/haohan4.jpg);
+			background-position: center center;
+			background-repeat: no-repeat;
+			background-attachment: fixed;
+			background-size: 100% 100%;
 			background-size: cover;
-			background-size: 100% 200%;
+			background-size: 100% 100%;
+			font-weight:600;
+			text-shadow: #fff 1px 0 0, #fff 0 1px 0, #fff -1px 0 0, #fff 0 -1px 0;
+		}
+		ul {
+			list-style: none; /* Remove default bullets */
+		}
+		ul li::before {
+			content: "\267F";  /* Add content: \2022 is the CSS Code/unicode for a bullet */
+			color: blue; /* Change the color */
+			font-weight: bold; /* If you want it to be bold */
+			display: inline-block; /* Needed to add space between the bullet and the text */
+			width: 3em; /* Also needed for space (tweak if needed) */
+			margin-left: -3em; /* Also needed for space (tweak if needed) */
 		}
 	</style>
 
@@ -24,17 +59,35 @@
 
 <body>
 	<div class="container">
-		<h1 style="text-align: center;">活字印刷术在线版</h1>
-		<img src="/static/lizi.jpg" alt="栗子头" width="100px" height="100px">
+		<h1 style="text-align: center;">活字印刷术在线版1.1</h1>
+		<h4 style="text-align: center;">长文本(上限400字)生成要等一段时间，期间请勿重复按生成按钮，小机遭不住惹QAQ</h4>
+
+		<!-- BGM -->
+		<audio loop id="bones"><source type='audio/mpeg' src="/static/mp3/♿Bones♿.mp3" /></audio>
+		<img src="/static/images/lizi.jpg" onClick="playbgm('bones')" alt="栗子头" title="点击显示详情" width="100px" height="100px">
+
+		<audio loop id="igs"><source type='audio/mpeg' src="/static/mp3/I Got Smoke.mp3" /></audio>
+		<img src="/static/images/rk5.jpg" onClick="playbgm('igs')" alt="丁真" title="点击显示锐刻五代" width="100px" height="100px">
+
 		<!-- 生成鬼叫 -->
 		<button class="btn btn-success" onclick="make_audio();">生成OTTO鬼叫</button>
 		<!-- 文本框 -->
-		<label for="text"></label><textarea maxlength="100" id="text" class="form-control"
+		<label for="text"></label><textarea maxlength="500" id="text" class="form-control"
 			style="height: 150px;"></textarea>
 		<!-- 生成选项 -->
-		<p><input type="checkbox" id="ysdd" />匹配到特定文字时使用原声大碟</p>
+		<p><input type="checkbox" checked='checked' id="ysdd" />匹配到特定文字时使用原声大碟(目前包括：
+			米浴说的道理
+			大家好啊
+			我是说的道理
+			今天来点大家想看的东西
+			说的道理
+			波比是我爹
+			啊嘛波比是我爹)
+		</p>
 		<p><input type="checkbox" id="reverse" />倒放生成的音频</p>
-		<p><input type="checkbox" id="norm" />统一音频的音量</p>
+		<p><input type="checkbox" checked='checked' id="norm" />统一音频的音量</p>
+
+		<strong style= "background:yellow">(以下调速和变调功能极耗性能，启用后限20字以内) </strong>
 		<p><text id="speedMultDisp">速度：1</text><input type="range" id="speedMult" min="0.5" max="2" value="1" step="0.1"
 			oninput="document.getElementById(&quot;speedMultDisp&quot;).textContent=&quot;速度：&quot;+this.value;"></p>
 		<p><text id="pitchMultDisp">音调：1</text><input type="range" id="pitchMult" min="0.5" max="2" value="1" step="0.1"
@@ -46,47 +99,58 @@
 			<!-- 生成的音频 -->
 			<h3>预览</h3>
 			<audio controls autoplay id="audio">
-				<source type='audio/wav' src="" />
+				<source type='audio/mpeg' src="" />
 			</audio>
 			<!-- 下载 链接指向audio_url -->
-			<p><a class="btn btn-primary" onclick="window.open(audio_url); return false;">下载</a></p>
+			<p style="text-shadow: none;">
+				<a class="btn btn-primary" onclick="window.open(audio_url); return false;">下载</a>
+			</p>
+			<!-- 加载网页自动播放（但chromium默认不支持 一坨沈阳美食家）
 			<audio autoplay id="hlmml">
-				<source type='audio/wav' src="/static/hlmml.wav" />
+				<source type='audio/wav' src="/static/ysdd/hlmml.wav" />
 			</audio>
-			<!-- 常用素材 -->
+			-->
+
+			<!-- 下面是些沈阳美食家（你能看到页面源码就自己照着路径下载，就不显示了，全是wav开个网页占一堆带宽） 
 			<h3>大家好啊</h3>
 			<audio controls id="djh">
-				<source type='audio/wav' src="/static/djha.wav" />
+				<source type='audio/wav' src="/static/ysdd/djha.wav" />
 			</audio>
 			<h3>我是说的道理</h3>
 			<audio controls id="wssddl">
-				<source type='audio/wav' src="/static/wssddl.wav" />
+				<source type='audio/wav' src="/static/ysdd/wssddl.wav" />
 			</audio>
 			<h3>今天来点大家想看的东西</h3>
 			<audio controls id="jt">
-				<source type='audio/wav' src="/static/jtlaidian.wav" />
+				<source type='audio/wav' src="/static/ysdd/jtlaidian.wav" />
 			</audio>
 			<h3>说的道理</h3>
 			<audio controls id="sddl">
-				<source type='audio/wav' src="/static/sddl.wav" />
+				<source type='audio/wav' src="/static/ysdd/sddl.wav" />
 			</audio>
 			<h3>米浴</h3>
 			<audio controls id="miyu">
-				<source type='audio/wav' src="/static/miyu.wav" />
+				<source type='audio/wav' src="/static/ysdd/miyu.wav" />
 			</audio>
 			<h3>波比</h3>
 			<audio controls id="bobi">
-				<source type='audio/wav' src="/static/bobi.wav" />
+				<source type='audio/wav' src="/static/ysdd/bobi.wav" />
 			</audio>
 			<h3>浮夸</h3>
 			<audio controls id="fukua">
-				<source type='audio/wav' src="/static/fukua.wav" />
+				<source type='audio/wav' src="/static/ysdd/fukua.wav" />
 			</audio>
 			<h3>完整版</h3>
 			<audio controls id="full">
-				<source type='audio/wav' src="/static/fullver.wav" />
+				<source type='audio/wav' src="/static/ysdd/fullver.wav" />
 			</audio>
+			-->
 		</div>
+		<hr>
+		<p><ul>
+			<li><a href="https://github.com/sakaneko117/HUOZI" target="_blank">源项目 by sakaneko117 && DSP-8192</a></li>
+			<li><a href="https://hub.docker.com/r/cwavguy/ottohuozi-flask-py3.9-alpine" target="_blank">Docker项目</a></li>
+		</ul></p>
 	</div>
 
 
@@ -122,17 +186,17 @@
 					if(this.status == 200){
 						data = JSON.parse(this.response);
 						//生成url
-						audio_url = "/get/" + data.id + ".wav";
+						audio_url = "/get/" + data.id + ".mp3";
 						//生成音频标签
 						$("#audio").html(
-							"<source type='audio/wav' src='" + audio_url + "' />"
+							"<source type='audio/mpeg' src='" + audio_url + "' />"
 						);
 						//重新加载标签
 						document.getElementById("audio").load();
 					}
 					//请求过多
 					else if (this.status == 429){
-						window.alert("憋刷辣！");
+						window.alert("憋刷辣！小鸡要哭哭惹");
 					}
 					//其他错误
 					else{

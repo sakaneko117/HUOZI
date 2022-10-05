@@ -5,11 +5,11 @@
 import soundfile as sf
 import psola
 import numpy as np
+from pydub import AudioSegment
 from playsound import playsound
 from pypinyin import lazy_pinyin
 import json
 from pathlib import Path
-
 
 
 
@@ -255,8 +255,23 @@ class huoZiYinShua:
 
 	
 	#导出wav文件
-	def __export(self, filePath):
+	def __export_wav(self, filePath):
 		folderPath = _fileName2FolderName(filePath)
 		if not Path(folderPath).exists():
 			Path(folderPath).mkdir()
 		sf.write(filePath, self.__concatenated, _targetSR)
+
+	# 导出mp3文件
+	def __export(self, filePath):
+		folderPath = _fileName2FolderName(filePath)
+		if not Path(folderPath).exists():
+			Path(folderPath).mkdir()
+		audio_segment = AudioSegment(
+			np.int16(self.__concatenated * 2 ** 15).tobytes(), 
+			frame_rate=_targetSR,
+			sample_width=2, 
+			channels=1
+		)
+		audio_segment.export(filePath, format="mp3", bitrate="128k")
+
+
